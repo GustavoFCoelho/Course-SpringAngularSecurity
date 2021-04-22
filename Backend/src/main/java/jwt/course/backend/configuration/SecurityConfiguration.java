@@ -4,7 +4,6 @@ import jwt.course.backend.filter.JwtAccessDeniedHandler;
 import jwt.course.backend.filter.JwtAuthenticationEntrypoint;
 import jwt.course.backend.filter.JwtAuthorizationFilter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -28,7 +27,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final JwtAuthorizationFilter filter;
     private final JwtAccessDeniedHandler deniedHandler;
     private final JwtAuthenticationEntrypoint authenticationEntrypoint;
-    @Qualifier("UserDetailsService")
     private final UserDetailsService userDetailsService;
     private final BCryptPasswordEncoder encoder;
 
@@ -50,7 +48,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager() throws Exception {
+    protected AuthenticationManager getAuthenticationManager() throws Exception {
         return super.authenticationManagerBean();
     }
 }
