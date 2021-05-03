@@ -34,15 +34,15 @@ export class UserService {
     return this.http.get<CustomHttpResponse>(`${this.host}/user/resetpassword/${email}`);
   }
 
-  public deleteUser(userId:number): Observable<CustomHttpResponse | HttpErrorResponse> {
-    return this.http.delete<CustomHttpResponse>(`${this.host}/user/delete/${userId}`);
+  public deleteUser(username:string): Observable<CustomHttpResponse | HttpErrorResponse> {
+    return this.http.delete<CustomHttpResponse>(`${this.host}/user/delete/${username}`);
   }
 
   public addUsersToLocalCache(users:User[]): void {
     localStorage.setItem("users", JSON.stringify(users));
   }
 
-  public getUsersToLocalCache(): User[] {
+  public getUsersFromLocalCache(): User[] {
     let users = JSON.parse(localStorage.getItem("users"));
     return users ? users : null;
   }

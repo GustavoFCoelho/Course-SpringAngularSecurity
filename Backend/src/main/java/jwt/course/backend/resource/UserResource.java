@@ -35,6 +35,7 @@ import static jwt.course.backend.constant.FileCostant.*;
 
 @RestController
 @RequiredArgsConstructor
+@CrossOrigin("*")
 @RequestMapping("/user")
 public class UserResource extends ExceptionHandling {
     private final UserService service;
@@ -64,7 +65,7 @@ public class UserResource extends ExceptionHandling {
                                         @RequestParam String role,
                                         @RequestParam String isActive,
                                         @RequestParam String isNonLocked,
-                                        @RequestParam(required = false) MultipartFile profileImage) throws UserNotFoundException, UsernameExistException, EmailExistException, IOException, MessagingException {
+                                        @RequestParam(required = false) MultipartFile profileImage) throws UserNotFoundException, UsernameExistException, EmailExistException, IOException, MessagingException, NotAnImageException {
         User user = service.addNewUser(firstName, lastName, username, email, role, Boolean.parseBoolean(isActive), Boolean.parseBoolean(isNonLocked), profileImage);
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
@@ -78,14 +79,14 @@ public class UserResource extends ExceptionHandling {
                                         @RequestParam String role,
                                         @RequestParam String isActive,
                                         @RequestParam String isNonLocked,
-                                        @RequestParam(required = false) MultipartFile profileImage) throws UserNotFoundException, UsernameExistException, EmailExistException, IOException, MessagingException {
+                                        @RequestParam(required = false) MultipartFile profileImage) throws UserNotFoundException, UsernameExistException, EmailExistException, IOException, MessagingException, NotAnImageException {
         User user = service.updateUser(currentUsername, firstName, lastName, username, email, role, Boolean.parseBoolean(isActive), Boolean.parseBoolean(isNonLocked), profileImage);
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     @PostMapping("/updateProfileImage")
     public ResponseEntity<?> updateUser(@RequestParam String username,
-                                        @RequestParam MultipartFile profileImage) throws UserNotFoundException, UsernameExistException, EmailExistException, IOException, MessagingException {
+                                        @RequestParam MultipartFile profileImage) throws UserNotFoundException, UsernameExistException, EmailExistException, IOException, MessagingException, NotAnImageException {
         User user = service.updateProfileImage(username, profileImage);
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
@@ -110,11 +111,11 @@ public class UserResource extends ExceptionHandling {
         return response(HttpStatus.OK, "An Email with a new password was sent to: " + email);
     }
 
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/delete/{username}")
     @PreAuthorize("hasAnyAuthority('user:delete')")
-    public ResponseEntity<HttpResponse> deleteUser(@PathVariable Long id){
-        service.deleteUser(id);
-        return response(HttpStatus.NO_CONTENT, "User Deleted Successfully");
+    public ResponseEntity<HttpResponse> deleteUser(@PathVariable String username) throws IOException {
+        service.deleteUser(username);
+        return response(HttpStatus.OK, "User Deleted Successfully");
     }
 
     private ResponseEntity<HttpResponse> response(HttpStatus status, String message) {
@@ -134,7 +135,7 @@ public class UserResource extends ExceptionHandling {
     }
 
     @GetMapping(path = "/image/profile/{username}", produces = MediaType.IMAGE_JPEG_VALUE)
-    public byte[] getTempProfileImage(@PathVariable String profile, @PathVariable String username) throws IOException {
+    public byte[] getTempProfileImage(@PathVariable String username) throws IOException {
         URL url = new URL(TEMP_PROFILE_IMAGE_BASE_URL + username);
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         try(InputStream stream = url.openStream()){

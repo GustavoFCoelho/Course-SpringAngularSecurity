@@ -46,7 +46,7 @@ export class AuthenticationService {
     localStorage.setItem("user", JSON.stringify(user));
   }
 
-  public getUserToLocalCache(): User{
+  public getUserFromLocalCache(): User{
     return JSON.parse(localStorage.getItem("user"));
   }
 
@@ -56,9 +56,9 @@ export class AuthenticationService {
 
   public isLoggedIn(): boolean {
     this.loadToken();
-    if(this.token){
+    if (this.token != null && this.token !== ''){
       if(this.jwtHelper.decodeToken(this.token).sub){
-         if(this.jwtHelper.isTokenExpired(this.token)){
+         if(!this.jwtHelper.isTokenExpired(this.token)){
            this.loggedInUsername = this.jwtHelper.decodeToken(this.token).sub
            return true;
          }

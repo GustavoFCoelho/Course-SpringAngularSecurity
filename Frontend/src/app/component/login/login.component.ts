@@ -4,7 +4,9 @@ import {AuthenticationService} from '../../service/authentication.service';
 import {NotifierService} from 'angular-notifier';
 import {User} from '../../model/user';
 import {Subscription} from 'rxjs';
-import {HttpResponse} from '@angular/common/http';
+import {HttpErrorResponse, HttpResponse} from '@angular/common/http';
+import {NotificationEnum} from '../../enum/notification-enum.enum';
+import {HeaderType} from '../../enum/heade-typer.enum';
 
 @Component({
   selector: 'app-login',
@@ -30,17 +32,27 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.showLoading = true;
     this.subscription.push(this.authService.login(user).subscribe(
       (response:HttpResponse<User>) =>{
-        const token = response.headers.get('Jwt-Token');
+        const token = response.headers.get(HeaderType.JWT_TOKEN);
         this.authService.saveToken(token);
         this.authService.addUserToLocalCache(response.body);
         this.router.navigateByUrl("/user/management");
         this.showLoading = false;
       }
-    ));
+    , (error:HttpErrorResponse) =>{
+        console.log(error);
+        this.sendErrorNotification(error.error.message);
+    }));
   }
 
   ngOnDestroy(): void {
-
+    this.subscription.forEach(sub => sub.unsubscribe());
   }
 
+  private sendErrorNotification(message: any) {
+    if(message){
+      this.notifier.notify(NotificationEnum.ERROR, message);
+    } else {
+      this.notifier.notify(NotificationEnum.ERROR, "An Error Ocurred");
+    }
+  }
 }
